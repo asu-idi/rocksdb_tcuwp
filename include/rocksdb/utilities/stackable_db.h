@@ -539,6 +539,11 @@ class StackableDB : public DB {
   Status TryCatchUpWithPrimary() override {
     return db_->TryCatchUpWithPrimary();
   }
+
+  using DB::TryCatchUpWithPrimary;
+  Status TryCatchUpWithPrimary(ColumnFamilyHandle* column_family) override {
+    return db_->TryCatchUpWithPrimary(column_family);
+  }
 #endif  // ROCKSDB_LITE
 
  protected:
