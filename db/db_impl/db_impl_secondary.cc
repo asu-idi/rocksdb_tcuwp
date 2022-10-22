@@ -233,7 +233,8 @@ Status DBImplSecondary::RecoverLogFiles(
             continue;
           }
           if (cfds_changed->count(cfd) == 0) {
-            cfds_changed->insert(cfd);
+            goto next_log_file;
+            // cfds_changed->insert(cfd);
           }
           const std::vector<FileMetaData*>& l0_files =
               cfd->current()->storage_info()->LevelFiles(0);
@@ -311,6 +312,7 @@ Status DBImplSecondary::RecoverLogFiles(
     if (status.ok() && !wal_read_status->ok()) {
       status = *wal_read_status;
     }
+    next_log_file:
     if (!status.ok()) {
       return status;
     }
@@ -592,12 +594,13 @@ Status DBImplSecondary::CheckConsistency() {
 }
 
 Status DBImplSecondary::TryCatchUpWithPrimary() {
+  // Only for no options given 
+
   assert(versions_.get() != nullptr);
   assert(manifest_reader_.get() != nullptr);
   Status s;
   // read the manifest and apply new changes to the secondary instance
   std::unordered_set<ColumnFamilyData*> cfds_changed;
-  JobContext job_context(0, true /*create_superversion*/);
   {
     InstrumentedMutexLock lock_guard(&mutex_);
     s = static_cast_with_check<ReactiveVersionSet>(versions_.get())
@@ -606,6 +609,37 @@ Status DBImplSecondary::TryCatchUpWithPrimary() {
 
     ROCKS_LOG_INFO(immutable_db_options_.info_log, "Last sequence is %" PRIu64,
                    static_cast<uint64_t>(versions_->LastSequence()));
+  }
+
+  s = DBImplSecondary::TryCatchUpWithPrimary(cfds_changed);
+
+  return s;
+}
+
+Status DBImplSecondary::TryCatchUpWithPrimary(ColumnFamilyHandle* column_family) {
+  Status s;
+
+  std::unordered_set<ColumnFamilyData*> cfds_changed;
+  auto cfh = static_cast_with_check<ColumnFamilyHandleImpl>(column_family);
+  assert(cfh != nullptr);
+  auto cfd = cfh->cfd();
+
+  cfds_changed.insert(cfd);
+  s = DBImplSecondary::TryCatchUpWithPrimary(cfds_changed);
+
+  return s;
+}
+
+Status DBImplSecondary::TryCatchUpWithPrimary(std::unordered_set<ColumnFamilyData*> cfds_changed) {
+  assert(versions_.get() != nullptr);
+  assert(manifest_reader_.get() != nullptr);
+  Status s;
+  s = Status::OK();
+  // read the manifest and apply new changes to the secondary instance
+  JobContext job_context(0, true /*create_superversion*/);
+  {
+    InstrumentedMutexLock lock_guard(&mutex_);
+
     for (ColumnFamilyData* cfd : cfds_changed) {
       if (cfd->IsDropped()) {
         ROCKS_LOG_DEBUG(immutable_db_options_.info_log, "[%s] is dropped\n",

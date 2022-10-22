@@ -244,7 +244,9 @@ class DBImplSecondary : public DBImpl {
   // log files until there is nothing more to read or encounters an error. If
   // the amount of information in the log files to process is huge, this
   // method can take long time due to all the I/O and CPU costs.
+  Status TryCatchUpWithPrimary(ColumnFamilyHandle* column_family) override;
   Status TryCatchUpWithPrimary() override;
+  Status TryCatchUpWithPrimary(std::unordered_set<ColumnFamilyData*> cfds_changed);
 
 
   // Try to find log reader using log_number from log_readers_ map, initialize
