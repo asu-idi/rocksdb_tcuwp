@@ -546,6 +546,11 @@ class DB {
     return s;
   }
 
+  virtual inline Status TryCatchUpWithPrimary(const std::vector<ColumnFamilyHandle*>& column_families) {
+    auto s = TryCatchUpWithPrimary(column_family);
+    return s;
+  }
+
   // Get() methods that return timestamp. Derived DB classes don't need to worry
   // about this group of methods if they don't care about timestamp feature.
   virtual inline Status Get(const ReadOptions& options,

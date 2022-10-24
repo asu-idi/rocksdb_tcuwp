@@ -246,8 +246,8 @@ class DBImplSecondary : public DBImpl {
   // method can take long time due to all the I/O and CPU costs.
   Status TryCatchUpWithPrimary(ColumnFamilyHandle* column_family) override;
   Status TryCatchUpWithPrimary() override;
+  Status TryCatchUpWithPrimary(const std::vector<ColumnFamilyHandle*>& column_families) override;
   Status TryCatchUpWithPrimary(std::unordered_set<ColumnFamilyData*> cfds_changed);
-
 
   // Try to find log reader using log_number from log_readers_ map, initialize
   // if it doesn't exist

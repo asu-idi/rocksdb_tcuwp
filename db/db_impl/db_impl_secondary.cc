@@ -616,6 +616,23 @@ Status DBImplSecondary::TryCatchUpWithPrimary() {
   return s;
 }
 
+Status DBImplSecondary::TryCatchUpWithPrimary(const std::vector<ColumnFamilyHandle*>& column_families) {
+  
+  Status s;
+  std::unordered_set<ColumnFamilyData*> cfds_changed;
+  
+  for (auto cfh : column_families) {
+    auto cfh = static_cast_with_check<ColumnFamilyHandleImpl>(column_family);
+    assert(cfh != nullptr);
+    auto cfd = cfh->cfd();
+  
+    cfds_changed.insert(cfd);
+  }
+
+  s = DBImplSecondary::TryCatchUpWithPrimary(cfds_changed);
+  return s;
+}
+
 Status DBImplSecondary::TryCatchUpWithPrimary(ColumnFamilyHandle* column_family) {
   Status s;
 
