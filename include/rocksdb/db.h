@@ -547,7 +547,7 @@ class DB {
   }
 
   virtual inline Status TryCatchUpWithPrimary(const std::vector<ColumnFamilyHandle*>& column_families) {
-    auto s = TryCatchUpWithPrimary(column_family);
+    auto s = TryCatchUpWithPrimary(column_families);
     return s;
   }
 
