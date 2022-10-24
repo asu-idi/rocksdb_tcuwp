@@ -621,7 +621,7 @@ Status DBImplSecondary::TryCatchUpWithPrimary(const std::vector<ColumnFamilyHand
   Status s;
   std::unordered_set<ColumnFamilyData*> cfds_changed;
   
-  for (auto cfh : column_families) {
+  for (auto column_family : column_families) {
     auto cfh = static_cast_with_check<ColumnFamilyHandleImpl>(column_family);
     assert(cfh != nullptr);
     auto cfd = cfh->cfd();
