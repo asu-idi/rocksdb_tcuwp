@@ -308,11 +308,13 @@ Status DBImplSecondary::RecoverLogFiles(
         // blocks that do not form coherent data
         reader->GetReporter()->Corruption(record.size(), status);
       }
+    next_log_file:
+    ;
     }
     if (status.ok() && !wal_read_status->ok()) {
       status = *wal_read_status;
     }
-    next_log_file:
+    // next_log_file:
     if (!status.ok()) {
       return status;
     }
